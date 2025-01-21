@@ -1,22 +1,29 @@
-export type BaseDto<T, E extends string> = {
-    eventType: E;
-} & T;
+// types.ts
+export abstract class BaseDto {
+    readonly eventType: string;
 
-export type MessageHandler<T, E extends string> = (message: BaseDto<T, E>) => void;
+    protected constructor() {
+        // Get the class name as the eventType
+        this.eventType = this.constructor.name;
+    }
+}
 
 export interface WebSocketHookResult {
-    sendRequest: <
-        TReq, TEReq extends string,
-        TRes, TERes extends string
-    >(
-        dto: BaseDto<TReq, TEReq>,
+    sendRequest: <TReq extends BaseDto, TRes extends BaseDto>(
+        request: TReq,
         timeoutMs?: number
-    ) => Promise<BaseDto<TRes, TERes>>;
+    ) => Promise<TRes>;
 
-    onMessage: <T, E extends string>(
-        eventType: E,
-        handler: MessageHandler<T, E>
+    onMessage: <T extends BaseDto>(
+        messageType: new (...args: any[]) => T,
+        handler: (message: T) => void
     ) => () => void;
 
     readyState: number;
 }
+
+export type PendingRequest = {
+    resolve: (value: any) => void;
+    reject: (error: Error) => void;
+    timeout: number;
+};

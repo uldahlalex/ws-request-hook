@@ -1,14 +1,9 @@
 // store.ts
-import { BaseDto, MessageHandler } from './types';
+import {BaseDto, PendingRequest} from './types';
 
-// Or alternatively, make it fully generic:
 export const globalMessageHandlers = new Map<
     string,
-    Set<MessageHandler<unknown, string>>
+    Set<(message: BaseDto) => void>
 >();
 
-export const pendingRequests = new Map<string, {
-    resolve: (value: any) => void;
-    reject: (error: Error) => void;
-    timeout: number;
-}>();
+export const pendingRequests = new Map<string, PendingRequest>();

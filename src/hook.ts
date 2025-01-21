@@ -1,8 +1,7 @@
-
 // hook.ts
 import { useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import {BaseDto, MessageHandler, WebSocketHookResult} from './types';
+import { BaseDto, WebSocketHookResult } from './types';
 import { globalMessageHandlers, pendingRequests } from './store';
 
 export function useWebSocketWithRequests(url: string): WebSocketHookResult {
@@ -17,6 +16,11 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
             try {
                 const message = JSON.parse(lastMessage.data);
 
+                if (!message.eventType) {
+                    console.error('Received message without eventType:', message);
+                    return;
+                }
+
                 if (message.requestId && pendingRequests.has(message.requestId)) {
                     const { resolve, reject, timeout } = pendingRequests.get(message.requestId)!;
                     clearTimeout(timeout);
@@ -24,18 +28,20 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
                     if (message.error) {
                         reject(new Error(message.error));
                     } else {
-                        resolve(message);
+                        // Create instance of the response DTO
+                        const responseDto = Object.assign(Object.create(BaseDto.prototype), message);
+                        resolve(responseDto);
                     }
 
                     pendingRequests.delete(message.requestId);
                     return;
                 }
 
-                if (message.eventType) {
-                    const handlers = globalMessageHandlers.get(message.eventType);
-                    if (handlers) {
-                        handlers.forEach(handler => handler(message));
-                    }
+                const handlers = globalMessageHandlers.get(message.eventType);
+                if (handlers) {
+                    // Create instance of the event DTO
+                    const eventDto = Object.assign(Object.create(BaseDto.prototype), message);
+                    handlers.forEach(handler => handler(eventDto));
                 }
             } catch (error) {
                 console.error('Failed to parse WebSocket message:', error);
@@ -43,20 +49,17 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
         }
     }, [lastMessage]);
 
-    const sendRequest = useCallback(async <
-        TReq, TEReq extends string,
-        TRes, TERes extends string
-    >(
-        dto: BaseDto<TReq, TEReq>,
+    const sendRequest = useCallback(async <TReq extends BaseDto, TRes extends BaseDto>(
+        request: TReq,
         timeoutMs: number = 5000
-    ): Promise<BaseDto<TRes, TERes>> => {
+    ): Promise<TRes> => {
         if (readyState !== ReadyState.OPEN) {
             throw new Error('WebSocket is not connected');
         }
 
         const requestId = crypto.randomUUID();
 
-        const promise = new Promise<BaseDto<TRes, TERes>>((resolve, reject) => {
+        const promise = new Promise<TRes>((resolve, reject) => {
             const timeout = setTimeout(() => {
                 pendingRequests.delete(requestId);
                 reject(new Error('Request timed out'));
@@ -66,27 +69,28 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
         });
 
         sendMessage(JSON.stringify({
-            ...dto,
+            ...request,
             requestId
         }));
 
         return promise;
     }, [sendMessage, readyState]);
 
-    const onMessage = useCallback(<T, E extends string>(
-        eventType: E,
-        handler: MessageHandler<T, E>
+    const onMessage = useCallback(<T extends BaseDto>(
+        messageType: new (...args: any[]) => T,
+        handler: (message: T) => void
     ) => {
+        const eventType = new messageType().eventType;
+
         if (!globalMessageHandlers.has(eventType)) {
             globalMessageHandlers.set(eventType, new Set());
         }
 
-        // Type assertion here since we know the handler is compatible
-        const handlers = globalMessageHandlers.get(eventType)! as Set<MessageHandler<T, E>>;
-        handlers.add(handler);
+        const handlers = globalMessageHandlers.get(eventType)!;
+        handlers.add(handler as (message: BaseDto) => void);
 
         return () => {
-            handlers.delete(handler);
+            handlers.delete(handler as (message: BaseDto) => void);
             if (handlers.size === 0) {
                 globalMessageHandlers.delete(eventType);
             }
