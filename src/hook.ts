@@ -1,6 +1,8 @@
+
+// hook.ts
 import { useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { BaseDto, WebSocketHookResult } from './types';
+import {BaseDto, MessageHandler, WebSocketHookResult} from './types';
 import { globalMessageHandlers, pendingRequests } from './store';
 
 export function useWebSocketWithRequests(url: string): WebSocketHookResult {
@@ -41,17 +43,20 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
         }
     }, [lastMessage]);
 
-    const sendRequest = useCallback(async <TRequest extends BaseDto, TResponse extends BaseDto>(
-        dto: TRequest,
+    const sendRequest = useCallback(async <
+        TReq, TEReq extends string,
+        TRes, TERes extends string
+    >(
+        dto: BaseDto<TReq, TEReq>,
         timeoutMs: number = 5000
-    ): Promise<TResponse> => {
+    ): Promise<BaseDto<TRes, TERes>> => {
         if (readyState !== ReadyState.OPEN) {
             throw new Error('WebSocket is not connected');
         }
 
         const requestId = crypto.randomUUID();
 
-        const promise = new Promise<TResponse>((resolve, reject) => {
+        const promise = new Promise<BaseDto<TRes, TERes>>((resolve, reject) => {
             const timeout = setTimeout(() => {
                 pendingRequests.delete(requestId);
                 reject(new Error('Request timed out'));
@@ -68,15 +73,16 @@ export function useWebSocketWithRequests(url: string): WebSocketHookResult {
         return promise;
     }, [sendMessage, readyState]);
 
-    const onMessage = useCallback(<T extends BaseDto>(
-        eventType: string,
-        handler: (message: T) => void
+    const onMessage = useCallback(<T, E extends string>(
+        eventType: E,
+        handler: MessageHandler<T, E>
     ) => {
         if (!globalMessageHandlers.has(eventType)) {
             globalMessageHandlers.set(eventType, new Set());
         }
 
-        const handlers = globalMessageHandlers.get(eventType)!;
+        // Type assertion here since we know the handler is compatible
+        const handlers = globalMessageHandlers.get(eventType)! as Set<MessageHandler<T, E>>;
         handlers.add(handler);
 
         return () => {
