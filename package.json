@@ -1,0 +1,25 @@
+{
+  "name": "ws-request-hook",
+  "version": "1.0.0",
+  "description": "WebSocket hook with request-response pattern",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "react": ">=18.8.0"
+  },
+  "dependencies": {
+    "react-use-websocket": "^4.x"
+  },
+  "devDependencies": {
+    "@types/react": "^18.x",
+    "typescript": "^5.x",
+    "react": "^18.x"
+  }
+}
