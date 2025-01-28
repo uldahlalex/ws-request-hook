@@ -9,15 +9,47 @@
  * ---------------------------------------------------------------
  */
 
+import {BaseDto} from "./types";
+
 export type ClientWantsToBroadcastToTopicDto = BaseDto & {
   message?: string;
   requestId?: string;
   topic?: string;
 };
 
-export interface BaseDto {
-  eventType?: string;
-}
+
+
+export type ServerConfirmsDto = BaseDto & {
+  requestId?: string;
+};
+
+export type ServerBroadcastsMessage = BaseDto & {
+  message?: string;
+  sender?: string;
+  topic?: string;
+};
+
+export type ClientWantsToSignInDto = BaseDto & {
+  username?: string;
+  password?: string;
+  requestId?: string;
+};
+
+export type ServerAuthenticatesClientDto = BaseDto & {
+  requestId?: string;
+  jwt?: string;
+};
+
+export type ClientWantsToSubscribeToTopicDto = BaseDto & {
+  topic?: string;
+  requestId?: string;
+};
+
+export type ServerHasSubscribedClientToTopicDto = BaseDto & {
+  topic?: string;
+  userId?: string;
+  requestId?: string;
+};
 
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
