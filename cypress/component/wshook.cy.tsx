@@ -1,7 +1,7 @@
 // cypress/component/WebSocketChat.cy.tsx
 import React, {useEffect, useState} from 'react';
 import {useWebSocketWithRequests} from '../../src';
-import {ClientWantsToSignInDto, ServerAuthenticatesClientDto} from '../Api';
+import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from '../Api';
 import '../support/component'
 
 const noAuth = "no auth!!";
@@ -19,7 +19,7 @@ function TestChat() {
     const authenticate = async () => {
         try {
             const dto: ClientWantsToSignInDto = {
-                eventType: "ClientWantsToSignInDto",
+                eventType: StringConstants.ClientWantsToSignInDto,
                 requestId: crypto.randomUUID(),
                 password: "abc",
                 username: "bob"
@@ -28,7 +28,7 @@ function TestChat() {
             console.log('Response received:', response);
 
             // Use the normalization helper
-            if ((response.eventType == "ServerAuthenticatesClient")) {
+            if ((response.eventType == StringConstants.ServerAuthenticatesClientDto)) {
                 setAuthStatus(authed);
             }
         } catch (error) {

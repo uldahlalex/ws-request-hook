@@ -6,10 +6,10 @@
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "scaffold": "npx swagger-typescript-api -p http://localhost:5000/swagger/v1/swagger.json -o ./src/ -n Api.ts",
+    "scaffold": "npx swagger-typescript-api -p http://localhost:5000/swagger/v1/swagger.json -o ./cypress/ -n Api.ts",
     "prepare": "npm run build",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run --component"
   },
   "files": [
     "dist"

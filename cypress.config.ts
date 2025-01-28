@@ -8,7 +8,7 @@ export default defineConfig({
       bundler: "webpack",
       webpackConfig
     },
-    specPattern: "cypress/component/**/*.cy.{ts,tsx}",
+    specPattern: "cypress/component/**/*.cy.tsx",
     supportFile: "cypress/support/component.ts",
     indexHtmlFile: "cypress/support/component-index.html"
   }

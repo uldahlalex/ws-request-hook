@@ -9,7 +9,7 @@
  * ---------------------------------------------------------------
  */
 
-import {BaseDto} from "../src/types";
+import { BaseDto } from "../src";
 
 export type ClientWantsToBroadcastToTopicDto = BaseDto & {
   message?: string;
@@ -23,7 +23,7 @@ export type ServerConfirmsDto = BaseDto & {
   requestId?: string;
 };
 
-export type ServerBroadcastsMessage = BaseDto & {
+export type ServerBroadcastsMessageDto = BaseDto & {
   message?: string;
   sender?: string;
   topic?: string;
@@ -50,6 +50,17 @@ export type ServerHasSubscribedClientToTopicDto = BaseDto & {
   userId?: string;
   requestId?: string;
 };
+
+/** Available eventType constants */
+export enum StringConstants {
+  ClientWantsToBroadcastToTopicDto = "ClientWantsToBroadcastToTopicDto",
+  ClientWantsToSignInDto = "ClientWantsToSignInDto",
+  ClientWantsToSubscribeToTopicDto = "ClientWantsToSubscribeToTopicDto",
+  ServerConfirmsDto = "ServerConfirmsDto",
+  ServerAuthenticatesClientDto = "ServerAuthenticatesClientDto",
+  ServerBroadcastsMessageDto = "ServerBroadcastsMessageDto",
+  ServerHasSubscribedClientToTopicDto = "ServerHasSubscribedClientToTopicDto",
+}
 
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
