@@ -6,6 +6,7 @@
   "types": "dist/types/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "scaffold": "npx swagger-typescript-api -p http://localhost:5000/swagger/v1/swagger.json -o ./src/ -n Api.ts",
     "prepare": "npm run build"
   },
   "files": [
@@ -26,8 +27,14 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
-    "typescript": "^5.0.0",
+    "cypress": "^14.0.0",
     "react": "^18.0.0",
-    "react-use-websocket": "^4.0.0"
+    "react-use-websocket": "^4.0.0",
+    "swagger-typescript-api": "^13.0.23",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/cypress": "^1.1.6"
   }
 }
