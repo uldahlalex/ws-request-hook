@@ -9,7 +9,7 @@
  * ---------------------------------------------------------------
  */
 
-import {BaseDto} from "./types";
+import {BaseDto} from "../src/types";
 
 export type ClientWantsToBroadcastToTopicDto = BaseDto & {
   message?: string;

@@ -1,10 +1,12 @@
 import { defineConfig } from "cypress";
+import webpackConfig from './webpack.config';
 
 export default defineConfig({
   component: {
     devServer: {
       framework: "react",
-      bundler: "webpack"
+      bundler: "webpack",
+      webpackConfig
     },
     specPattern: "cypress/component/**/*.cy.{ts,tsx}",
     supportFile: "cypress/support/component.ts",

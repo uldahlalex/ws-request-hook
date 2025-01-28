@@ -1,9 +1,9 @@
 // types.ts
 export abstract class BaseDto {
     readonly eventType: string;
+    requestId?: string;
 
     protected constructor() {
-        // Get the class name as the eventType
         this.eventType = this.constructor.name;
     }
 }
