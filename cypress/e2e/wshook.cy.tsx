@@ -1,70 +1,49 @@
-import {useEffect, useState} from "react";
-import {useWebSocketWithRequests} from "../../src";
-import '../../src/Api';
-import {ServerBroadcastsMessage, ClientWantsToBroadcastToTopicDto} from "../../src/Api";
-import React from "react";
+// cypress/component/WebSocketChat.cy.tsx
+import React, {useEffect, useState} from 'react';
+import {useWebSocketWithRequests} from '../../src';
+import {ClientWantsToSignInDto, ServerAuthenticatesClientDto} from '../../src/Api';
+import '../support/component'
 
-function TestChatRoom() {
-    const [messages, setMessages] = useState<Array<{id: string, text: string}>>([]);
-    const [newMessage, setNewMessage] = useState('');
-    const { sendRequest, onMessage, readyState } = useWebSocketWithRequests('ws://localhost:8181');
+const noAuth = "no auth!!";
+const authed = "Authenticated";
+
+function TestChat() {
+    const [authStatus, setAuthStatus] = useState<string>(noAuth);
+    const {sendRequest, readyState} = useWebSocketWithRequests('wss://fs25-267099996159.europe-north1.run.app');
 
     useEffect(() => {
-        if (readyState !== 1) return;
-        const dto: ClientWantsToBroadcastToTopicDto = {
-            message: '',
-            topic: 'Messages',
-            requestId: 'A'
+        authenticate()
+    }, []);
+
+    const authenticate = async () => {
+        try {
+            const dto: ClientWantsToSignInDto = {
+                eventType: "ClientWantsToSignInDto",
+                requestId: crypto.randomUUID(),
+                password: "abc",
+                username: "bob"
+            }
+            const response = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto);
+            setAuthStatus(authed);
+        } catch (error) {
+            setAuthStatus(noAuth);
         }
-      
-    }, [onMessage, readyState]);
-
-    const handleSend = async (e: React.FormEvent) => {
-
     };
 
     return (
         <div>
-            <div data-testid="messages">
-                {messages.map(msg => (
-                    <div key={msg.id} data-testid="message">
-                        {msg.text}
-                    </div>
-                ))}
-            </div>
-            <form data-testid="message-form" onSubmit={handleSend}>
-                <input
-                    data-testid="message-input"
-                    value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
-                />
-                <button type="submit">Send</button>
-            </form>
+            <div data-testid="auth-status">{authStatus}</div>
         </div>
     );
 }
 
-describe('Chat Room', () => {
+describe('WebSocket Chat Component', () => {
     beforeEach(() => {
-        cy.mount(<TestChatRoom />);
+        cy.mount(<TestChat/>);
     });
 
-    it('should send and receive messages', () => {
-        // Type and send a message
-        cy.get('[data-testid="message-input"]')
-            .type('Hello, World!');
-        cy.get('[data-testid="message-form"]')
-            .submit();
-
-        // Verify message was sent and received
-        cy.get('[data-testid="message"]')
-            .should('contain', 'Hello, World!');
-    });
-
-    it('should handle incoming messages', () => {
-        // Simulate receiving a message
-        // You might need to set up a mock WebSocket server for this
-        cy.get('[data-testid="messages"]')
-            .should('exist');
+    it('should authenticate', () => {
+        cy.get('[data-testid="auth-status"]')
+            .should('contain', authed);
     });
 });
