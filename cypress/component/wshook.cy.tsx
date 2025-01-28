@@ -3,6 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {useWebSocketWithRequests} from '../../src';
 import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from '../Api';
 import '../support/component'
+import {normalizeEventType} from "../../src/hook";
 
 const noAuth = "no auth!!";
 const authed = "Authenticated";
@@ -27,8 +28,10 @@ function TestChat() {
             const response = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto);
             console.log('Response received:', response);
 
-            // Use the normalization helper
-            if ((response.eventType == StringConstants.ServerAuthenticatesClientDto)) {
+            const normalized = normalizeEventType(StringConstants.ServerAuthenticatesClientDto);
+            console.log(normalized);
+            if (normalizeEventType(response.eventType) == normalized) {
+                console.log("Equal: Test should pass")
                 setAuthStatus(authed);
             }
         } catch (error) {
