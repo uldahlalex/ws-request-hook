@@ -1,12 +1,5 @@
-// types.ts
-export abstract class BaseDto {
-    readonly eventType: string;
-    requestId?: string;
+import {BaseDto} from "./hook";
 
-    protected constructor() {
-        this.eventType = this.constructor.name;
-    }
-}
 
 export interface WebSocketHookResult {
     sendRequest: <TReq extends BaseDto, TRes extends BaseDto>(
@@ -15,7 +8,7 @@ export interface WebSocketHookResult {
     ) => Promise<TRes>;
 
     onMessage: <T extends BaseDto>(
-        messageType: new (...args: any[]) => T,
+        eventType: string,
         handler: (message: T) => void
     ) => () => void;
 

@@ -10,6 +10,12 @@ export default defineConfig({
     },
     specPattern: "cypress/component/**/*.cy.tsx",
     supportFile: "cypress/support/component.ts",
-    indexHtmlFile: "cypress/support/component-index.html"
+    indexHtmlFile: "cypress/support/component-index.html",
+    requestTimeout: 10000,
+    pageLoadTimeout: 10000,
+    taskTimeout: 10000,
+    execTimeout: 10000,
+    responseTimeout: 10000,
+    defaultCommandTimeout: 10000
   }
 });

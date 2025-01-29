@@ -3,40 +3,46 @@ import React, {useEffect, useState} from 'react';
 import {useWebSocketWithRequests} from '../../src';
 import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from '../Api';
 import '../support/component'
-import {normalizeEventType} from "../../src/hook";
+import {compareEventTypes, removeDto} from "../../src/hook";
 
 const noAuth = "no auth!!";
 const authed = "Authenticated";
+
+const dto: ClientWantsToSignInDto = {
+    eventType: StringConstants.ClientWantsToSignInDto,
+    requestId: crypto.randomUUID(),
+    password: "abc",
+    username: "bob"
+}
 
 function TestChat() {
     const [authStatus, setAuthStatus] = useState<string>(noAuth);
     const {sendRequest, readyState} = useWebSocketWithRequests('wss://fs25-267099996159.europe-north1.run.app');
 
     useEffect(() => {
-        if(readyState==1)
-            authenticate()
+        if (readyState != 1) return;
+        sendRequests();
     }, [readyState]);
 
-    const authenticate = async () => {
+    const sendRequests = async () => {
         try {
-            const dto: ClientWantsToSignInDto = {
-                eventType: StringConstants.ClientWantsToSignInDto,
-                requestId: crypto.randomUUID(),
-                password: "abc",
-                username: "bob"
-            }
+            console.log("Sending auth request:", dto);
             const response = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto);
-            console.log('Response received:', response);
+            console.log("Received auth response:", response);
 
-            const normalized = normalizeEventType(StringConstants.ServerAuthenticatesClientDto);
-            console.log(normalized);
-            if (normalizeEventType(response.eventType) == normalized) {
-                console.log("Equal: Test should pass")
-                setAuthStatus(authed);
-            }
+            const expected = StringConstants.ServerAuthenticatesClientDto;
+            const actual = response.eventType!;
+
+            console.log(`Comparing event types:`, {
+                expected,
+                actual,
+                matches: compareEventTypes(expected, actual)
+            });
+
+            setAuthStatus(compareEventTypes(expected, actual) ? authed : "Unauthenticated!");
         } catch (error) {
-            console.error('Authentication error:', error);
-            setAuthStatus("still "+noAuth);
+            console.error("Auth request failed:", error);
+            setAuthStatus("Auth failed!");
         }
     };
 
