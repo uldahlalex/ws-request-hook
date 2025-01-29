@@ -1,4 +1,9 @@
-import {BaseDto} from "./hook";
+
+export interface BaseDto {
+    eventType?: string;
+    requestId?: string;
+    error?: string;
+}
 
 
 export interface WebSocketHookResult {

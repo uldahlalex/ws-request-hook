@@ -1,10 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {BaseDto} from "./types";
 
-export interface BaseDto {
-    eventType?: string;
-    requestId?: string;
-    error?: string;
-}
 
 const globalMessageHandlers = new Map<string, Set<(message: BaseDto) => void>>();
 const pendingRequests = new Map<string, {
