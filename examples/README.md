@@ -1,0 +1,1 @@
+This is example is a basic Vite+Typescript+React app (made from npm create vite) and adding ws-request-hook

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {useWebSocketWithRequests} from '../../src';
+import {useWebSocketWithRequests, useWsClient, WsClientProvider} from '../../src';
 import {
     ClientWantsToBroadcastToTopicDto,
     ClientWantsToSignInDto,
@@ -11,7 +11,6 @@ import {
     StringConstants
 } from '../Api';
 import '../support/component'
-import {removeDto} from "../../src/hook";
 
 const broadcastMessage = "Hello world!"; // Define this constant
 
@@ -20,7 +19,7 @@ function TestChat() {
         sendRequest,
         onMessage,
         readyState
-    } = useWebSocketWithRequests('wss://fs25-267099996159.europe-north1.run.app');
+    } = useWsClient();
     const [receivedMessage, setReceivedMessage] = useState<string>("Waiting");
 
     useEffect(() => {
@@ -35,7 +34,7 @@ function TestChat() {
             StringConstants.ServerBroadcastsMessageDto,
             (message) => {
                 console.log("Has now received: "+JSON.stringify(message));
-                setReceivedMessage(message.Message || message.message || "No message received");
+                setReceivedMessage(message.message || message.message || "No message received");
             }
         );
         return () => unsubscribe();
@@ -79,7 +78,12 @@ function TestChat() {
 
 describe('WebSocket Chat Component', () => {
     beforeEach(() => {
-        cy.mount(<TestChat/>);
+        cy.mount(
+            <WsClientProvider url="wss://fs25-267099996159.europe-north1.run.app/">
+
+            <TestChat/>
+            </WsClientProvider>
+        );
     });
 
     it('should receive broadcast message', () => {

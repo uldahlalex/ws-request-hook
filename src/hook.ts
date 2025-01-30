@@ -36,24 +36,18 @@ function handleBroadcastMessage(message: BaseDto) {
         eventType: message.eventType
     };
 
-    console.log('Normalized message:', normalizedMessage);
 
     if (normalizedMessage.requestId && pendingRequests.has(normalizedMessage.requestId)) {
         return handlePendingRequest(normalizedMessage);
     }
 
-    console.log('Searching for handlers for message type:', normalizedMessage.eventType);
-    console.log('Current registered handlers:', Array.from(globalMessageHandlers.keys()));
-
     const matchingHandlerEntry = Array.from(globalMessageHandlers.entries())
         .find(([handlerEventType]) => {
             const matches = compareEventTypes(handlerEventType, normalizedMessage.eventType!);
-            console.log(`Comparing: "${handlerEventType}" with "${normalizedMessage.eventType}" => ${matches}`);
             return matches;
         });
 
     if (!matchingHandlerEntry) {
-        console.log('No handlers registered for message type:', normalizedMessage.eventType);
         return;
     }
 
@@ -62,8 +56,6 @@ function handleBroadcastMessage(message: BaseDto) {
 }
 
 function handlePendingRequest(message: BaseDto) {
-    console.log('Handling pending request:', message);
-    console.log('Current pending requests:', Array.from(pendingRequests.keys()));
 
     const requestId = message.requestId!;
     const pendingRequest = pendingRequests.get(requestId);
@@ -80,7 +72,6 @@ function handlePendingRequest(message: BaseDto) {
         console.error('Request failed with error:', message.error);
         reject(new Error(message.error));
     } else {
-        console.log('Resolving request with response:', message);
         resolve(message as BaseDto);
     }
     pendingRequests.delete(requestId);
@@ -105,18 +96,15 @@ export function useWebSocketWithRequests(url: string) {
         ws.current = socket;
 
         socket.onopen = () => {
-            console.log('WebSocket connected');
             setReadyState(socket.readyState);
         };
 
         socket.onclose = () => {
-            console.log('WebSocket disconnected');
             setReadyState(socket.readyState);
         };
 
         socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
-            console.log('Received WebSocket message:', message);
             handleBroadcastMessage(message);
         };
 
@@ -157,7 +145,6 @@ export function useWebSocketWithRequests(url: string) {
         handler: (message: T) => void
     ) => {
         const normalizedEventType = removeDto(eventType);
-        console.log('Registering handler for normalized event type:', normalizedEventType);
         const handlers = getOrCreateHandlerSet(normalizedEventType);
         handlers.add(handler as (message: BaseDto) => void);
 

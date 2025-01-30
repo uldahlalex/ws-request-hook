@@ -1,9 +1,9 @@
 // cypress/component/WebSocketChat.cy.tsx
 import React, {useEffect, useState} from 'react';
-import {useWebSocketWithRequests} from '../../src';
+import {useWebSocketWithRequests, useWsClient, useWsRequest, WsClientProvider} from '../../src';
 import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from '../Api';
 import '../support/component'
-import {compareEventTypes, removeDto} from "../../src/hook";
+import {compareEventTypes, removeDto} from "../../src";
 
 const noAuth = "no auth!!";
 const authed = "Authenticated";
@@ -17,8 +17,7 @@ const dto: ClientWantsToSignInDto = {
 
 function TestChat() {
     const [authStatus, setAuthStatus] = useState<string>(noAuth);
-    const {sendRequest, readyState} = useWebSocketWithRequests('wss://fs25-267099996159.europe-north1.run.app');
-
+    const {sendRequest, readyState} = useWsClient();
     useEffect(() => {
         if (readyState != 1) return;
         sendRequests();
@@ -55,7 +54,12 @@ function TestChat() {
 
 describe('WebSocket Chat Component', () => {
     beforeEach(() => {
-        cy.mount(<TestChat/>);
+        cy.mount(
+            <WsClientProvider url="wss://fs25-267099996159.europe-north1.run.app/">
+
+            <TestChat/>
+            </WsClientProvider>
+        );
     });
 
     it('should authenticate', () => {
