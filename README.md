@@ -40,6 +40,11 @@ export type ClientWantsToBroadcastToTopicDto = BaseDto & {
   topic?: string;
 };
 
+export type ServerAuthenticatesClientDto = BaseDto & {
+  requestId?: string;
+  jwt?: string;
+};
+
 ```
 
 3) Send request using "sendRequest" from the hook inside a React component:
@@ -47,6 +52,28 @@ export type ClientWantsToBroadcastToTopicDto = BaseDto & {
 ```tsx
 // ./examples/src/components/SignIn.tsx
 
+import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from "../types-from-open-api.ts";
+import {useWsClient} from "../../../src";
+
+export default function SignIn() {
+
+    const { sendRequest } = useWsClient();
+
+    const signIn = async () => {
+        const signInDto: ClientWantsToSignInDto = {
+            eventType: StringConstants.ClientWantsToSignInDto,
+            password: "abc",
+            username: "bob"
+        }
+        const signInResult: ServerAuthenticatesClientDto = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(signInDto,"ServerAuthenticatesClientDto");
+        console.log(signInResult)
+    };
+
+    return (<>
+        <div className="border border-red-500">auth component</div>
+        <button onClick={signIn}>sign in</button>
+    </>)
+}
 ```
 
 ____
@@ -69,6 +96,43 @@ export type ServerBroadcastsMessageDto = BaseDto & {
 
 ```tsx
 // ./examples/src/components/ListenToMessages.tsx
+
+import {useEffect, useState} from 'react';
+import {useWsClient} from '../../../src';
+import {ServerBroadcastsMessageDto, StringConstants} from '../types-from-open-api.ts';
+
+
+export default function ListenToMessages() {
+    const {
+        onMessage,
+        readyState
+    } = useWsClient();
+
+    const [receivedMessage, setReceivedMessage] = useState<string>("Waiting for broadcast");
+
+    useEffect(() => {
+        if (readyState != 1) return;
+        reactToBroadcasts();
+    }, [onMessage, readyState]);
+
+    const reactToBroadcasts = async() => {
+        const unsubscribe = onMessage<ServerBroadcastsMessageDto>(
+            StringConstants.ServerBroadcastsMessageDto,
+            (message) => {
+                setReceivedMessage(message.message || "No message received");
+            }
+        );
+        return () => unsubscribe();
+    }
+
+
+    return (
+        <div className="border border-red-500">
+            <div data-testid="broadcast-message">{receivedMessage}</div>
+        </div>
+    );
+}
+
 
 ```
 
