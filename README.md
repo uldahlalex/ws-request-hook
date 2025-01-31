@@ -47,7 +47,7 @@ export type ServerAuthenticatesClientDto = BaseDto & {
 
 ```
 
-3) Send request using "sendRequest" from the hook inside a React component:
+2) Send request using "sendRequest" from the hook inside a React component:
 
 ```tsx
 // ./examples/src/components/SignIn.tsx
@@ -73,6 +73,16 @@ export default function SignIn() {
         <div className="border border-red-500">auth component</div>
         <button onClick={signIn}>sign in</button>
     </>)
+}
+```
+
+If you don't get the expected server event type for the request you sent, you can find the response as the error value in the next catch block:
+
+```tsx
+try {
+  await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto, "ServerAuthenticatesClient");
+} catch (error) {
+  const errorDto = error as unknown as ServerSendsErrorMessagesDto; //or whatever model you have for server errors
 }
 ```
 
@@ -136,8 +146,7 @@ export default function ListenToMessages() {
 
 ```
 
-Don't forget to call unsubscribe() - if you need to re-trigger the event, wrap it inside a useEffect() hook
-
+Don't forget to call unsubscribe(). If you need to re-trigger the event, wrap it inside a useEffect() hook and use the dependencies array (second argument in useEffect())
 
 _____
 

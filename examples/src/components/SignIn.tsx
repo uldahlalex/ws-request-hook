@@ -11,7 +11,7 @@ export default function SignIn() {
             password: "abc",
             username: "bob"
         }
-        const signInResult: ServerAuthenticatesClientDto = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(signInDto,"ServerAuthenticatesClientDto");
+        const signInResult: ServerAuthenticatesClientDto = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(signInDto,"ServerAuthenticatesClient");
         console.log(signInResult)
     };
 

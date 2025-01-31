@@ -15,7 +15,7 @@ export default function SubscribeToTopic() {
             eventType: StringConstants.ClientWantsToSubscribeToTopicDto,
             topic: "Messages"
         };
-        const subscribeResult = await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto, "ServerHasSubscribedClientToTopicDto");
+        const subscribeResult = await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto, "ServerHasSubscribedClientToTopic");
         console.log(subscribeResult)
     }
     return (<>
