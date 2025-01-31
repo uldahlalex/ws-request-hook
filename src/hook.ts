@@ -15,8 +15,16 @@ export function removeDto(eventType: string): string {
     return eventType.replace(/Dto$/, '');
 }
 
-export function compareEventTypes(type1: string, type2: string): boolean {
-    return removeDto(type1) === removeDto(type2);
+export function normalizeEventType(eventType: string | undefined): string {
+    if (!eventType) return '';
+    return eventType
+        .toLowerCase()
+        .replace(/dto$/i, '')  // Remove 'dto' or 'Dto' or 'DTO' from end
+        .replace(/[^a-z0-9]/g, ''); // Remove all non-alphanumeric characters
+}
+
+export function compareEventTypes(type1: string | undefined, type2: string | undefined): boolean {
+    return normalizeEventType(type1) === normalizeEventType(type2);
 }
 
 function getOrCreateHandlerSet(eventType: string): Set<(message: BaseDto) => void> {
@@ -28,24 +36,21 @@ function getOrCreateHandlerSet(eventType: string): Set<(message: BaseDto) => voi
     return handlers;
 }
 
+
 function handleBroadcastMessage(message: BaseDto) {
-    // First normalize the message to handle case-insensitive properties
     const normalizedMessage = {
         ...message,
         requestId: (message as any).RequestId || message.requestId,
-        eventType: message.eventType
+        eventType: message.eventType || (message as any).EventType // Handle potential Pascal case
     };
-
 
     if (normalizedMessage.requestId && pendingRequests.has(normalizedMessage.requestId)) {
         return handlePendingRequest(normalizedMessage);
     }
 
     const matchingHandlerEntry = Array.from(globalMessageHandlers.entries())
-        .find(([handlerEventType]) => {
-            const matches = compareEventTypes(handlerEventType, normalizedMessage.eventType!);
-            return matches;
-        });
+        .find(([handlerEventType]) =>
+            compareEventTypes(handlerEventType, normalizedMessage.eventType));
 
     if (!matchingHandlerEntry) {
         return;
@@ -54,6 +59,7 @@ function handleBroadcastMessage(message: BaseDto) {
     const [, handlers] = matchingHandlerEntry;
     handlers.forEach(handler => handler(normalizedMessage));
 }
+
 
 function handlePendingRequest(message: BaseDto) {
 
@@ -125,18 +131,23 @@ export function useWebSocketWithRequests(url: string) {
                 return;
             }
 
+            const enrichedRequest = {
+                ...request,
+                requestId: request.requestId || crypto.randomUUID()
+            };
+
             const timeout = setTimeout(() => {
-                pendingRequests.delete(request.requestId!);
+                pendingRequests.delete(enrichedRequest.requestId);
                 reject(new Error('Request timed out'));
             }, REQUEST_TIMEOUT);
 
-            pendingRequests.set(request.requestId!, {
+            pendingRequests.set(enrichedRequest.requestId, {
                 resolve: resolve as (value: BaseDto) => void,
                 reject,
                 timeout
             });
 
-            ws.current.send(JSON.stringify(request));
+            ws.current.send(JSON.stringify(enrichedRequest));
         });
     }, []);
 
@@ -144,12 +155,14 @@ export function useWebSocketWithRequests(url: string) {
         eventType: string,
         handler: (message: T) => void
     ) => {
-        const normalizedEventType = removeDto(eventType);
+        // Store with normalized event type
+        const normalizedEventType = normalizeEventType(eventType);
         const handlers = getOrCreateHandlerSet(normalizedEventType);
         handlers.add(handler as (message: BaseDto) => void);
 
         return () => removeHandler(normalizedEventType, handler as (message: BaseDto) => void);
     }, []);
+
 
     return {
         sendRequest,

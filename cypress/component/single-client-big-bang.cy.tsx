@@ -1,4 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
+// @ts-ignore
+import React from 'react'
 import {useWebSocketWithRequests, useWsClient, WsClientProvider} from '../../src';
 import {
     ClientWantsToBroadcastToTopicDto,
@@ -29,12 +31,10 @@ function TestChat() {
 
     useEffect(() => {
         if(readyState!= 1) return;
-
-        const unsubscribe = onMessage<ServerBroadcastsMessageDto>(
-            StringConstants.ServerBroadcastsMessageDto,
+        const unsubscribe = onMessage<ServerBroadcastsMessageDto>(StringConstants.ServerBroadcastsMessageDto,
             (message) => {
                 console.log("Has now received: "+JSON.stringify(message));
-                setReceivedMessage(message.message || message.message || "No message received");
+                setReceivedMessage(message.message || "No message received");
             }
         );
         return () => unsubscribe();
@@ -44,7 +44,6 @@ function TestChat() {
         try {
             const signInDto: ClientWantsToSignInDto = {
                 eventType: StringConstants.ClientWantsToSignInDto,
-                requestId: crypto.randomUUID(),
                 password: "abc",
                 username: "bob"
             }
@@ -52,14 +51,12 @@ function TestChat() {
 
             const subcribeDto: ClientWantsToSubscribeToTopicDto = {
                 eventType: StringConstants.ClientWantsToSubscribeToTopicDto,
-                requestId: crypto.randomUUID(),
                 topic: "Messages"
             };
             await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto);
 
             const broadcastDto: ClientWantsToBroadcastToTopicDto = {
                 eventType: StringConstants.ClientWantsToBroadcastToTopicDto,
-                requestId: crypto.randomUUID(),
                 topic: "Messages",
                 message: broadcastMessage
             }
@@ -80,7 +77,6 @@ describe('WebSocket Chat Component', () => {
     beforeEach(() => {
         cy.mount(
             <WsClientProvider url="wss://fs25-267099996159.europe-north1.run.app/">
-
             <TestChat/>
             </WsClientProvider>
         );

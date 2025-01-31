@@ -23,7 +23,6 @@ export default function AuthAndSubscribe() {
     const signInAndSubscribe = async () => {
         const signInDto: ClientWantsToSignInDto = {
             eventType: StringConstants.ClientWantsToSignInDto,
-            requestId: crypto.randomUUID(),
             password: "abc",
             username: "bob"
         }
@@ -32,7 +31,6 @@ export default function AuthAndSubscribe() {
 
         const subcribeDto: ClientWantsToSubscribeToTopicDto = {
             eventType: StringConstants.ClientWantsToSubscribeToTopicDto,
-            requestId: crypto.randomUUID(),
             topic: "Messages"
         };
         const subscribeResult = await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto);

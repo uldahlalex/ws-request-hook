@@ -15,7 +15,6 @@ export default function BroadcastMessage() {
         }
         const broadcastDto: ClientWantsToBroadcastToTopicDto = {
             eventType: StringConstants.ClientWantsToBroadcastToTopicDto,
-            requestId: crypto.randomUUID(),
             topic: "Messages",
             message: "Hello world"
         }

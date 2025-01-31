@@ -1,6 +1,6 @@
 {
   "name": "ws-request-hook",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "WebSocket hook with request-response pattern",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -29,7 +29,9 @@
   "devDependencies": {
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.26.0",
+    "@cypress/react18": "^2.0.0",
     "@cypress/webpack-preprocessor": "^6.0.2",
+    "@testing-library/react": "^14.0.0",
     "@types/cypress": "^1.1.6",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
@@ -41,8 +43,9 @@
     "react-dom": "^18.2.0",
     "react-use-websocket": "^4.0.0",
     "swagger-typescript-api": "^13.0.23",
-    "typescript": "^5.0.0",
-    "@cypress/react18": "^2.0.0",
-    "@testing-library/react": "^14.0.0"  
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ws-request-hook": "^1.0.7"
   }
 }

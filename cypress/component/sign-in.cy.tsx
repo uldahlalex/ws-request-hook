@@ -1,5 +1,7 @@
 // cypress/component/WebSocketChat.cy.tsx
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
+// @ts-ignore
+import React from 'react'
 import {useWebSocketWithRequests, useWsClient, useWsRequest, WsClientProvider} from '../../src';
 import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from '../Api';
 import '../support/component'
@@ -10,7 +12,6 @@ const authed = "Authenticated";
 
 const dto: ClientWantsToSignInDto = {
     eventType: StringConstants.ClientWantsToSignInDto,
-    requestId: crypto.randomUUID(),
     password: "abc",
     username: "bob"
 }
