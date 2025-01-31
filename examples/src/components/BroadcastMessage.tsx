@@ -18,7 +18,7 @@ export default function BroadcastMessage() {
             topic: "Messages",
             message: "Hello world"
         }
-        const broadcastConfirmationResult = await sendRequest<ClientWantsToBroadcastToTopicDto, ServerConfirmsDto>(broadcastDto);
+        const broadcastConfirmationResult = await sendRequest<ClientWantsToBroadcastToTopicDto, ServerConfirmsDto>(broadcastDto, "ServerConfirmsDto");
         console.log(broadcastConfirmationResult)
     }
 

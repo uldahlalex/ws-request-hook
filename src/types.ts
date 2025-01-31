@@ -9,6 +9,7 @@ export interface BaseDto {
 export interface WebSocketHookResult {
     sendRequest: <TReq extends BaseDto, TRes extends BaseDto>(
         request: TReq,
+        expectedResponseEventType: string,
         timeoutMs?: number
     ) => Promise<TRes>;
 

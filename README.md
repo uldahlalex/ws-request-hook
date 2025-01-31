@@ -1,10 +1,10 @@
-## ws-request-hook
+# ws-request-hook
 
 ### Usage
 
 #### Wrap your app in the provider:
 
-```ts
+```tsx
 // ./examples/src/main.tsx
 
 import {StrictMode} from 'react'
@@ -26,10 +26,10 @@ ____
 
 ##### For request-response pattern:
 
-A) Make a model that extends BaseDto:
+1) After wrapping your app in the provider, make request + response models that extends BaseDto:
 
 ```ts
-// ././examples/src/types-from-open-api.ts#L12-L20
+// ./examples/src/types-from-open-api.ts#L12-L25
 
 
 import {BaseDto} from "ws-request-hook";
@@ -42,17 +42,20 @@ export type ClientWantsToBroadcastToTopicDto = BaseDto & {
 
 ```
 
-B) Send request using sendRequest from the hook inside a react component:
+3) Send request using "sendRequest" from the hook inside a React component:
 
-(coming)
+```tsx
+// ./examples/src/components/SignIn.tsx
+
+```
 
 ____
 #### For Message listening:
 
-A) Define a model that extends BaseDto
+1) After wrapping your App component in the Provider, define a response model that extends BaseDto
 
 ```ts
-// ././examples/src/types-from-open-api.ts#L27-L31
+import {BaseDto} from "ws-request-hook";
 
 export type ServerBroadcastsMessageDto = BaseDto & {
   message?: string;
@@ -62,6 +65,19 @@ export type ServerBroadcastsMessageDto = BaseDto & {
 ```
 
 
-B) Use onMessage from the hook inside React component (here demonstrated with useEffect)
+2) Use onMessage from the hook inside React component (here demonstrated with useEffect)
 
-(coming)
+```tsx
+// ./examples/src/components/ListenToMessages.tsx
+
+```
+
+Don't forget to call unsubscribe() - if you need to re-trigger the event, wrap it inside a useEffect() hook
+
+
+_____
+
+Behavior explanation:
+- Request-response with sendRequest attaches a requestId on the object. Once the client receives the ID, it is assumed this is the response for the request.
+  - The websocket server should therefore only attach the requestId to the message going back to the client which is intended to be a "response" for the original request.
+

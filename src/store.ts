@@ -6,4 +6,9 @@ export const globalMessageHandlers = new Map<
     Set<(message: BaseDto) => void>
 >();
 
-export const pendingRequests = new Map<string, PendingRequest>();
+const pendingRequests = new Map<string, {
+    resolve: (value: BaseDto) => void,
+    reject: (reason: any) => void,
+    timeout: NodeJS.Timeout,
+    expectedResponseEventType: string
+}>();

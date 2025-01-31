@@ -1,32 +1,24 @@
-// src/context.tsx
 import React, { createContext, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { useWebSocketWithRequests } from './hook';
+import { useWebSocketWithRequests, WsHookResult } from './hook';
 import { BaseDto } from './types';
 
-export interface WsClientContextType {
-    readyState: number;
-    sendRequest: <TRequest extends BaseDto, TResponse extends BaseDto>(
-        request: TRequest
-    ) => Promise<TResponse>;
-    onMessage: <T extends BaseDto>(
-        eventType: string,
-        callback: (data: T) => void
-    ) => () => void;
-}
+// Context using the imported WsHookResult type
+const WsClientContext = createContext<WsHookResult | null>(null);
 
-const WsClientContext = createContext<WsClientContextType | null>(null);
-
+// Provider Props
 interface WsClientProviderProps {
     url: string;
     children: ReactNode;
 }
 
+// Provider Component
 export function WsClientProvider({ url, children }: WsClientProviderProps) {
     const ws = useWebSocketWithRequests(url);
     return <WsClientContext.Provider value={ws}>{children}</WsClientContext.Provider>;
 }
 
-export function useWsClient() {
+// Main hook to access WebSocket client
+export function useWsClient(): WsHookResult {
     const context = useContext(WsClientContext);
     if (!context) {
         throw new Error('useWsClient must be used within a WsClientProvider');
@@ -34,23 +26,28 @@ export function useWsClient() {
     return context;
 }
 
-// Helper hooks
+// Subscription hook
 export function useWsSubscription<T extends BaseDto>(
     eventType: string,
-    callback: (data: T) => void
+    handler: (message: T) => void
 ) {
     const { onMessage } = useWsClient();
 
     useEffect(() => {
-        const unsubscribe = onMessage<T>(eventType, callback);
+        const unsubscribe = onMessage<T>(eventType, handler);
         return () => unsubscribe();
-    }, [eventType, callback, onMessage]);
+    }, [eventType, handler, onMessage]);
 }
 
-export function useWsRequest<TRequest extends BaseDto, TResponse extends BaseDto>() {
+// Request hook
+export function useWsRequest<TReq extends BaseDto, TRes extends BaseDto>() {
     const { sendRequest } = useWsClient();
     return useCallback(
-        (request: TRequest) => sendRequest<TRequest, TResponse>(request),
+        (request: TReq, expectedResponseEventType: string, timeoutMs?: number) =>
+            sendRequest<TReq, TRes>(request, expectedResponseEventType, timeoutMs),
         [sendRequest]
     );
 }
+
+// Export everything that should be available to consumers
+export type { WsHookResult };

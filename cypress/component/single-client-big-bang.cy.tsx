@@ -47,20 +47,21 @@ function TestChat() {
                 password: "abc",
                 username: "bob"
             }
-            await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(signInDto);
+            await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(signInDto, StringConstants.ServerAuthenticatesClientDto);
 
             const subcribeDto: ClientWantsToSubscribeToTopicDto = {
                 eventType: StringConstants.ClientWantsToSubscribeToTopicDto,
                 topic: "Messages"
             };
-            await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto);
+            await sendRequest<ClientWantsToSubscribeToTopicDto, ServerHasSubscribedClientToTopicDto>(subcribeDto, StringConstants
+                .ServerHasSubscribedClientToTopicDto);
 
             const broadcastDto: ClientWantsToBroadcastToTopicDto = {
                 eventType: StringConstants.ClientWantsToBroadcastToTopicDto,
                 topic: "Messages",
                 message: broadcastMessage
             }
-            await sendRequest<ClientWantsToBroadcastToTopicDto, ServerConfirmsDto>(broadcastDto);
+            await sendRequest<ClientWantsToBroadcastToTopicDto, ServerConfirmsDto>(broadcastDto, StringConstants.ServerConfirmsDto);
         } catch (error) {
             console.error('Authentication error:', error);
         }

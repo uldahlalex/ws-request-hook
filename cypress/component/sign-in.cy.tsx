@@ -27,7 +27,7 @@ function TestChat() {
     const sendRequests = async () => {
         try {
             console.log("Sending auth request:", dto);
-            const response = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto);
+            const response = await sendRequest<ClientWantsToSignInDto, ServerAuthenticatesClientDto>(dto, StringConstants.ServerAuthenticatesClientDto);
             console.log("Received auth response:", response);
 
             const expected = StringConstants.ServerAuthenticatesClientDto;

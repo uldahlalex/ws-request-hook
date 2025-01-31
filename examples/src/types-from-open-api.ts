@@ -18,6 +18,10 @@ export type ClientWantsToBroadcastToTopicDto = BaseDto & {
   topic?: string;
 };
 
+export type ServerAuthenticatesClientDto = BaseDto & {
+  requestId?: string;
+  jwt?: string;
+};
 
 
 export type ServerConfirmsDto = BaseDto & {
@@ -36,10 +40,6 @@ export type ClientWantsToSignInDto = BaseDto & {
   requestId?: string;
 };
 
-export type ServerAuthenticatesClientDto = BaseDto & {
-  requestId?: string;
-  jwt?: string;
-};
 
 export type ClientWantsToSubscribeToTopicDto = BaseDto & {
   topic?: string;

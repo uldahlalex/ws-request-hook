@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import { useWsClient} from '../../../src';
+import {useWsClient} from '../../../src';
 import {ServerBroadcastsMessageDto, StringConstants} from '../types-from-open-api.ts';
 
 
