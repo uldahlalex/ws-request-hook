@@ -1,6 +1,6 @@
 {
   "name": "ws-request-hook",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "WebSocket hook with request-response pattern",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -44,8 +44,5 @@
     "react-use-websocket": "^4.0.0",
     "swagger-typescript-api": "^13.0.23",
     "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "ws-request-hook": "^1.0.7"
   }
 }
