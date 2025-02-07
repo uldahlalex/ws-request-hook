@@ -2,14 +2,26 @@
 
 ### Usage
 
+First you need a React app. You can make one with Vite + Typescript like:
+
+```
+npm create vite -- --template react-ts
+```
+
+And add dependency like this:
+
+```
+npm install ws-request-hook
+```
+
+
 #### Wrap your app in the provider:
 
 ```tsx
-// ./examples/src/main.tsx
 
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import {WsClientProvider} from "../../src";
+import {WsClientProvider} from "ws-request-hook";
 import App from "./components/App.tsx";
 
 
@@ -29,8 +41,6 @@ ____
 1) After wrapping your app in the provider, make request + response models that extends BaseDto:
 
 ```ts
-// ./examples/src/types-from-open-api.ts#L12-L25
-
 
 import {BaseDto} from "ws-request-hook";
 
@@ -50,10 +60,9 @@ export type ServerAuthenticatesClientDto = BaseDto & {
 2) Send request using "sendRequest" from the hook inside a React component:
 
 ```tsx
-// ./examples/src/components/SignIn.tsx
 
 import {ClientWantsToSignInDto, ServerAuthenticatesClientDto, StringConstants} from "../types-from-open-api.ts";
-import {useWsClient} from "../../../src";
+import {useWsClient} from "ws-request-hook";
 
 export default function SignIn() {
 
@@ -105,10 +114,9 @@ export type ServerBroadcastsMessageDto = BaseDto & {
 2) Use onMessage from the hook inside React component (here demonstrated with useEffect)
 
 ```tsx
-// ./examples/src/components/ListenToMessages.tsx
 
 import {useEffect, useState} from 'react';
-import {useWsClient} from '../../../src';
+import {useWsClient} from 'ws-request-hook';
 import {ServerBroadcastsMessageDto, StringConstants} from '../types-from-open-api.ts';
 
 
