@@ -1,5 +1,7 @@
 # ws-request-hook
 
+For a small example app, see [https://github.com/uldahlalex/ws-request-hook-example](https://github.com/uldahlalex/ws-request-hook-example)
+
 ### Usage
 
 First you need a React app. You can make one with Vite + Typescript like:

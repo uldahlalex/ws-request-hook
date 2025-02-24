@@ -122,33 +122,73 @@ function handleBroadcastMessage(message: BaseDto) {
 export function useWebSocketWithRequests(url: string): WsHookResult {
     const [readyState, setReadyState] = useState<number>(0);
     const ws = useRef<WebSocket | null>(null);
+    const reconnectAttempts = useRef(0);
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 1000; // Start with 1 second
 
-    useEffect(() => {
+
+    const connect = useCallback(() => {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+            return; // Already connected
+        }
+
         const socket = new WebSocket(url);
         ws.current = socket;
 
         socket.onopen = () => {
+            console.log('WebSocket connected');
             setReadyState(socket.readyState);
+            reconnectAttempts.current = 0; // Reset attempts on successful connection
         };
 
-        socket.onclose = () => {
+        socket.onclose = (event) => {
+            console.log('WebSocket closed:', event.code, event.reason);
             setReadyState(socket.readyState);
+
+            // Only attempt to reconnect if we haven't exceeded max attempts
+            if (reconnectAttempts.current < maxReconnectAttempts) {
+                const timeoutDuration = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
+                reconnectAttempts.current++;
+
+                console.log(`Reconnecting in ${timeoutDuration}ms (attempt ${reconnectAttempts.current})`);
+                setTimeout(connect, timeoutDuration);
+            }
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
         };
 
         socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            handleBroadcastMessage(message);
-        };
-
-        return () => {
-            pendingRequests.forEach(({reject, timeout}) => {
-                clearTimeout(timeout);
-                reject(new Error('WebSocket closed'));
-            });
-            pendingRequests.clear();
-            socket.close();
+            try {
+                const message = JSON.parse(event.data);
+                handleBroadcastMessage(message);
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
         };
     }, [url]);
+
+    useEffect(() => {
+        connect();
+
+        return () => {
+            if (ws.current) {
+                ws.current.close();
+                ws.current = null;
+            }
+        };
+    }, [connect])
+
+    useEffect(() => {
+        const heartbeatInterval = setInterval(() => {
+            if (ws.current?.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({ type: 'ping' }));
+            }
+        }, 30000); // Send heartbeat every 30 seconds
+
+        return () => clearInterval(heartbeatInterval);
+    }, []);
 
     const sendRequest = useCallback(<TReq extends BaseDto, TRes extends BaseDto>(
         request: TReq,
@@ -178,7 +218,13 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
                 expectedResponseEventType
             });
 
-            ws.current.send(JSON.stringify(enrichedRequest));
+            try {
+                ws.current.send(JSON.stringify(enrichedRequest));
+            } catch (error) {
+                clearTimeout(timeout);
+                pendingRequests.delete(enrichedRequest.requestId);
+                reject(error);
+            }
         });
     }, []);
 
