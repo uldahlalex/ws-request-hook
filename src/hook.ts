@@ -180,15 +180,7 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
         };
     }, [connect])
 
-    useEffect(() => {
-        const heartbeatInterval = setInterval(() => {
-            if (ws.current?.readyState === WebSocket.OPEN) {
-                ws.current.send(JSON.stringify({ type: 'ping' }));
-            }
-        }, 30000); // Send heartbeat every 30 seconds
 
-        return () => clearInterval(heartbeatInterval);
-    }, []);
 
     const sendRequest = useCallback(<TReq extends BaseDto, TRes extends BaseDto>(
         request: TReq,

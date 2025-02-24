@@ -1,6 +1,6 @@
 {
   "name": "ws-request-hook",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "WebSocket hook with request-response pattern",
   "main": "dist/index.js",
   "types": "dist/types/index.d.ts",
