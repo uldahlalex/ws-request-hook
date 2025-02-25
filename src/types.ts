@@ -19,6 +19,8 @@ export interface WebSocketHookResult {
     ) => () => void;
 
     readyState: number;
+    send: <T extends BaseDto>(message: T) => void; 
+
 }
 
 export type PendingRequest = {

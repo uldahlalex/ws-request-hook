@@ -15,6 +15,8 @@ export interface WsHookResult {
         eventType: string,
         handler: (message: T) => void
     ) => () => void;
+    send: <T extends BaseDto>(message: T) => void;
+
 }
 
 
@@ -231,9 +233,23 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
         return () => removeHandler(normalizedEventType, handler as (message: BaseDto) => void);
     }, []);
 
+    const send = useCallback(<T extends BaseDto>(message: T) => {
+        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket is not connected');
+            return;
+        }
+
+        try {
+            ws.current.send(JSON.stringify(message));
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        }
+    }, []);
+
     return {
         sendRequest,
         onMessage,
-        readyState
+        readyState,
+        send  
     };
 }
