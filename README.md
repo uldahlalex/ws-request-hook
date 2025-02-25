@@ -157,8 +157,16 @@ export default function ListenToMessages() {
 ```
 
 Don't forget to call unsubscribe(). If you need to re-trigger the event, wrap it inside a useEffect() hook and use the dependencies array (second argument in useEffect())
-
 _____
+#### For simple send (fire and forget: no response tracking)
+
+
+```tsx
+ws.send({ eventType: 'broadcastMessage', data: 'foo' });
+
+```
+_____
+
 
 Behavior explanation:
 - Request-response with sendRequest attaches a requestId on the object. Once the client receives the ID, it is assumed this is the response for the request.
