@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BaseDto } from "./types";
 
-// In hook.ts
 export interface WsHookResult {
     readyState: number;
     sendRequest: <
@@ -16,9 +15,7 @@ export interface WsHookResult {
         handler: (message: T) => void
     ) => () => void;
     send: <T extends BaseDto>(message: T) => void;
-
 }
-
 
 interface PendingRequest {
     resolve: (value: BaseDto) => void;
@@ -27,14 +24,11 @@ interface PendingRequest {
     expectedResponseEventType: string;
 }
 
-// Constants
 const REQUEST_TIMEOUT = 5000;
 
-// Global State
 const globalMessageHandlers = new Map<string, Set<(message: BaseDto) => void>>();
 const pendingRequests = new Map<string, PendingRequest>();
 
-// Utility Functions
 export function removeDto(eventType: string): string {
     return eventType.replace(/Dto$/, '');
 }
@@ -83,14 +77,13 @@ function handlePendingRequest(message: BaseDto) {
     clearTimeout(timeout);
 
     if (!compareEventTypes(expectedResponseEventType, message.eventType)) {
-        // If it's not the expected type, just pass through the message
         reject(message);
         pendingRequests.delete(requestId);
         return;
     }
 
     if (message.error) {
-        reject(message); // Pass through the raw message
+        reject(message);
     } else {
         resolve(message as BaseDto);
     }
@@ -120,18 +113,37 @@ function handleBroadcastMessage(message: BaseDto) {
     handlers.forEach(handler => handler(normalizedMessage));
 }
 
-// Main Hook
 export function useWebSocketWithRequests(url: string): WsHookResult {
     const [readyState, setReadyState] = useState<number>(0);
     const ws = useRef<WebSocket | null>(null);
     const reconnectAttempts = useRef(0);
     const maxReconnectAttempts = 5;
-    const reconnectDelay = 1000; // Start with 1 second
+    const reconnectDelay = 1000;
 
+    const send = useCallback(<T extends BaseDto>(message: T) => {
+        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket is not connected');
+            return;
+        }
+
+        try {
+            ws.current.send(JSON.stringify(message));
+        } catch (error) {
+            console.error('Failed to send message:', error);
+        }
+    }, []);
+
+    const ping = useCallback(() => {
+        if (ws.current?.readyState === WebSocket.OPEN) {
+            send({
+                eventType: 'ping'
+            });
+        }
+    }, [send]);
 
     const connect = useCallback(() => {
         if (ws.current?.readyState === WebSocket.OPEN) {
-            return; // Already connected
+            return;
         }
 
         const socket = new WebSocket(url);
@@ -140,14 +152,13 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
         socket.onopen = () => {
             console.log('WebSocket connected');
             setReadyState(socket.readyState);
-            reconnectAttempts.current = 0; // Reset attempts on successful connection
+            reconnectAttempts.current = 0;
         };
 
         socket.onclose = (event) => {
             console.log('WebSocket closed:', event.code, event.reason);
             setReadyState(socket.readyState);
 
-            // Only attempt to reconnect if we haven't exceeded max attempts
             if (reconnectAttempts.current < maxReconnectAttempts) {
                 const timeoutDuration = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 30000);
                 reconnectAttempts.current++;
@@ -174,15 +185,16 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
     useEffect(() => {
         connect();
 
+        const pingInterval = setInterval(ping, 30000);
+
         return () => {
             if (ws.current) {
                 ws.current.close();
                 ws.current = null;
             }
+            clearInterval(pingInterval);
         };
-    }, [connect])
-
-
+    }, [connect, ping]);
 
     const sendRequest = useCallback(<TReq extends BaseDto, TRes extends BaseDto>(
         request: TReq,
@@ -233,23 +245,10 @@ export function useWebSocketWithRequests(url: string): WsHookResult {
         return () => removeHandler(normalizedEventType, handler as (message: BaseDto) => void);
     }, []);
 
-    const send = useCallback(<T extends BaseDto>(message: T) => {
-        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-            console.warn('WebSocket is not connected');
-            return;
-        }
-
-        try {
-            ws.current.send(JSON.stringify(message));
-        } catch (error) {
-            console.error('Failed to send message:', error);
-        }
-    }, []);
-
     return {
         sendRequest,
         onMessage,
         readyState,
-        send  
+        send
     };
 }
